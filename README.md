@@ -1,9 +1,8 @@
-                                                        # API Bridge
+                                                        API Bridge
 
 A full-stack REST API demo. The browser frontend talks to an Express backend over four clean endpoints — GET all, GET one, POST create, DELETE. No frameworks, no build step.
-
-             ![License: MIT](https://img.shields.io/badge/License-MIT-7c6cfc.svg)
-            ![Node.js](https://img.shields.io/badge/Node.js-18%2B-22c55e)
+![License: MIT](https://img.shields.io/badge/License-MIT-7c6cfc.svg)
+![Node.js](https://img.shields.io/badge/Node.js-18%2B-22c55e)
 
 -----------------------------------------------------
 
