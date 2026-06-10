@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ProductShelf — REST API Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Tokens ─────────────────────────────────────────────────────── */
+    :root {
+      --bg:       #0f0f11;
+      --surface:  #18181c;
+      --border:   #2a2a30;
+      --accent:   #7c6dfa;
+      --accent2:  #a78bfa;
+      --ok:       #34d399;
+      --warn:     #f87171;
+      --text:     #e8e8f0;
+      --muted:    #7878a0;
+      --radius:   10px;
+      --max:      1100px;
+    }
+
+    /* ── Reset ──────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Inter", sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ─────────────────────────────────────────────────────── */
+    header {
+      border-bottom: 1px solid var(--border);
+      background: rgba(15,15,17,.85);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-family: "Syne", sans-serif;
+      font-weight: 800;
+      font-size: 1.2rem;
+      letter-spacing: -.5px;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .logo span { color: var(--accent); }
+    nav { display: flex; gap: 6px; }
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: color .15s, background .15s;
+    }
+    nav a:hover { color: var(--text); background: var(--surface); }
+
+    /* ── Hero ───────────────────────────────────────────────────────── */
+    .hero {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 64px 24px 48px;
+    }
+    .hero h1 {
+      font-family: "Syne", sans-serif;
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -1px;
+    }
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(120deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      margin-top: 14px;
+      color: var(--muted);
+      max-width: 480px;
+      font-size: 1rem;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 20px;
+      padding: 5px 12px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--warn);
+    }
+    .dot.live { background: var(--ok); animation: pulse 2s infinite; }
+    @keyframes pulse {
+      0%,100% { opacity: 1; }
+      50%      { opacity: .4; }
+    }
+
+    /* ── Main layout ────────────────────────────────────────────────── */
+    main {
+      flex: 1;
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 24px 64px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 32px;
+      align-items: start;
+    }
+    @media (max-width: 780px) {
+      main { grid-template-columns: 1fr; }
+    }
+
+    /* ── Section titles ─────────────────────────────────────────────── */
+    .section-title {
+      font-family: "Syne", sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    /* ── Product cards ──────────────────────────────────────────────── */
+    #products-list {
+      display: grid;
+      gap: 12px;
+    }
+    .product-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      transition: border-color .2s, transform .2s;
+      cursor: pointer;
+      animation: slideIn .3s ease both;
+    }
+    .product-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .card-left { flex: 1; min-width: 0; }
+    .card-name {
+      font-weight: 600;
+      font-size: 0.97rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-meta {
+      display: flex;
+      gap: 10px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+    .tag {
+      font-size: 0.75rem;
+      padding: 2px 9px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .tag.in  { border-color: #1a3d30; background: #0d2419; color: var(--ok); }
+    .tag.out { border-color: #3d1a1a; background: #240d0d; color: var(--warn); }
+    .card-price {
+      font-family: "Syne", sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--accent2);
+      white-space: nowrap;
+    }
+    .card-date {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    /* ── Empty / loading / error states ─────────────────────────────── */
+    .state-box {
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .spinner {
+      width: 28px; height: 28px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Sidebar: API tester ─────────────────────────────────────────── */
+    .sidebar { display: flex; flex-direction: column; gap: 20px; }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .panel-head {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 0.88rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .method {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    .method.get  { background: #1a3a5c; color: #60b0ff; }
+    .method.post { background: #1a3d2a; color: #5dda8c; }
+
+    .panel-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+
+    label { font-size: 0.8rem; color: var(--muted); display: block; margin-bottom: 4px; }
+    input, select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      padding: 8px 11px;
+      font-size: 0.88rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .15s;
+    }
+    input:focus, select:focus { border-color: var(--accent); }
+    input::placeholder { color: var(--muted); }
+
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .btn {
+      padding: 9px 16px;
+      border-radius: 7px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 600;
+      font-family: inherit;
+      transition: opacity .15s, transform .1s;
+    }
+    .btn:hover  { opacity: .85; }
+    .btn:active { transform: scale(.97); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-ghost   { background: var(--border); color: var(--text); }
+
+    .response-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 11px 13px;
+      font-family: "Courier New", monospace;
+      font-size: 0.78rem;
+      color: var(--ok);
+      white-space: pre-wrap;
+      max-height: 180px;
+      overflow-y: auto;
+      line-height: 1.55;
+    }
+    .response-box.err { color: var(--warn); }
+
+    /* ── API config notice ───────────────────────────────────────────── */
+    .config-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+    .config-bar code {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 4px;
+      color: var(--accent2);
+      font-size: 0.8rem;
+    }
+    #base-url-input {
+      flex: 1;
+      min-width: 180px;
+      max-width: 260px;
+      padding: 5px 10px;
+      font-size: 0.82rem;
+    }
+
+    /* ── Footer ─────────────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 24px;
+    }
+    .footer-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { color: var(--muted); text-decoration: none; font-size: 0.82rem; }
+    .footer-links a:hover { color: var(--text); }
+    .footer-copy { color: var(--muted); font-size: 0.8rem; }
+
+    /* ── Scrollbar ───────────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ──────────────────────────────────────────────────────────────── -->
+<header>
+  <div class="header-inner">
+    <a href="#" class="logo">Product<span>Shelf</span></a>
+    <nav>
+      <a href="#products">Products</a>
+      <a href="#try-api">API Tester</a>
+      <a href="https://github.com" target="_blank">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ── HERO ────────────────────────────────────────────────────────────────── -->
+<div class="hero">
+  <h1>Full-stack REST<br><em>in one page.</em></h1>
+  <p>Frontend talks to an Express backend over three clean endpoints — GET all, GET one, POST create. Edit the base URL to point at your own server.</p>
+  <div class="badge">
+    <span class="dot" id="status-dot"></span>
+    <span id="status-label">Checking API…</span>
+  </div>
+</div>
+
+<!-- ── MAIN ────────────────────────────────────────────────────────────────── -->
+<main>
+
+  <!-- ── Products column ───────────────────────────────────────────── -->
+  <section id="products">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+      <p class="section-title">All Products <span id="count" style="color:var(--text);"></span></p>
+      <button class="btn btn-ghost" onclick="loadProducts()" style="font-size:0.8rem; padding:6px 14px;">↻ Refresh</button>
+    </div>
+
+    <!-- API base URL config -->
+    <div class="config-bar" style="margin-bottom:18px;">
+      <span>API base URL</span>
+      <input id="base-url-input" type="text" value="http://localhost:3001" placeholder="http://localhost:3001" />
+      <button class="btn btn-primary" onclick="loadProducts()" style="padding:5px 14px; font-size:0.8rem;">Connect</button>
+    </div>
+
+    <div id="products-list">
+      <div class="state-box"><div class="spinner"></div>Loading products…</div>
+    </div>
+  </section>
+
+  <!-- ── Sidebar ───────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="try-api">
+
+    <!-- GET one product -->
+    <div class="panel">
+      <div class="panel-head">
+        <span class="method get">GET</span>
+        /api/products/:id
+      </div>
+      <div class="panel-body">
+        <div>
+          <label>Product ID</label>
+          <input id="get-id" type="number" placeholder="1" min="1" />
+        </div>
+        <button class="btn btn-primary" onclick="getOne()">Fetch product</button>
+        <div id="get-one-response" class="response-box" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- POST new product -->
+    <div class="panel">
+      <div class="panel-head">
+        <span class="method post">POST</span>
+        /api/products
+      </div>
+      <div class="panel-body">
+        <div>
+          <label>Name</label>
+          <input id="new-name" type="text" placeholder="Wireless Mouse" />
+        </div>
+        <div class="row2">
+          <div>
+            <label>Category</label>
+            <input id="new-cat" type="text" placeholder="Electronics" />
+          </div>
+          <div>
+            <label>Price ($)</label>
+            <input id="new-price" type="number" placeholder="29.99" min="0" step="0.01" />
+          </div>
+        </div>
+        <div>
+          <label>In Stock</label>
+          <select id="new-stock">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="createProduct()">Create product</button>
+        <div id="post-response" class="response-box" style="display:none;"></div>
+      </div>
+    </div>
+
+  </aside>
+</main>
+
+<!-- ── FOOTER ──────────────────────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-inner">
+    <span class="footer-copy">© 2025 ProductShelf — REST API Demo</span>
+    <div class="footer-links">
+      <a href="https://expressjs.com" target="_blank">Express</a>
+      <a href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API" target="_blank">Fetch API</a>
+      <a href="https://github.com" target="_blank">GitHub</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ── SCRIPTS ─────────────────────────────────────────────────────────────── -->
+<script>
+  // ── Helpers ──────────────────────────────────────────────────────────────
+  const base = () => document.getElementById("base-url-input").value.replace(/\/$/, "");
+  const fmt  = (obj) => JSON.stringify(obj, null, 2);
+
+  function setStatus(live, label) {
+    const dot = document.getElementById("status-dot");
+    dot.className = "dot" + (live ? " live" : "");
+    document.getElementById("status-label").textContent = label;
+  }
+
+  function showResponse(elId, data, isError = false) {
+    const el = document.getElementById(elId);
+    el.style.display = "block";
+    el.className = "response-box" + (isError ? " err" : "");
+    el.textContent = typeof data === "string" ? data : fmt(data);
+  }
+
+  function renderCard(p, idx) {
+    const date = new Date(p.createdAt).toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
+    return `
+      <div class="product-card" style="animation-delay:${idx * 60}ms" onclick="quickGet(${p.id})">
+        <div class="card-left">
+          <div class="card-name">${escHtml(p.name)}</div>
+          <div class="card-meta">
+            <span class="tag">${escHtml(p.category)}</span>
+            <span class="tag ${p.inStock ? "in" : "out"}">${p.inStock ? "In stock" : "Out of stock"}</span>
+          </div>
+        </div>
+        <div>
+          <div class="card-price">$${parseFloat(p.price).toFixed(2)}</div>
+          <div class="card-date">${date}</div>
+        </div>
+      </div>`;
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  // ── GET /api/products ────────────────────────────────────────────────────
+  async function loadProducts() {
+    const list = document.getElementById("products-list");
+    list.innerHTML = `<div class="state-box"><div class="spinner"></div>Fetching from ${base()}/api/products…</div>`;
+
+    try {
+      const res  = await fetch(`${base()}/api/products`);
+      const json = await res.json();
+
+      if (!res.ok) throw new Error(json.message || "Server error");
+
+      setStatus(true, `API live — ${json.count} product${json.count !== 1 ? "s" : ""}`);
+      document.getElementById("count").textContent = `(${json.count})`;
+
+      if (json.data.length === 0) {
+        list.innerHTML = `<div class="state-box">No products yet — create one using the form →</div>`;
+        return;
+      }
+
+      list.innerHTML = json.data.map((p, i) => renderCard(p, i)).join("");
+    } catch (err) {
+      setStatus(false, "API unreachable");
+      list.innerHTML = `
+        <div class="state-box">
+          <div style="color:var(--warn); margin-bottom:8px;">⚠ Could not reach API</div>
+          <div>Make sure your Express server is running:<br>
+          <code style="font-size:0.8rem;">cd backend && npm start</code></div>
+        </div>`;
+    }
+  }
+
+  // ── GET /api/products/:id ────────────────────────────────────────────────
+  async function getOne() {
+    const id = document.getElementById("get-id").value.trim();
+    if (!id) return showResponse("get-one-response", "Enter a product ID.", true);
+
+    try {
+      const res  = await fetch(`${base()}/api/products/${id}`);
+      const json = await res.json();
+      showResponse("get-one-response", json, !res.ok);
+    } catch (err) {
+      showResponse("get-one-response", `Network error: ${err.message}`, true);
+    }
+  }
+
+  // Clicking a card pre-fills and fires GET one
+  function quickGet(id) {
+    document.getElementById("get-id").value = id;
+    document.getElementById("try-api").scrollIntoView({ behavior: "smooth" });
+    getOne();
+  }
+
+  // ── POST /api/products ───────────────────────────────────────────────────
+  async function createProduct() {
+    const name     = document.getElementById("new-name").value.trim();
+    const category = document.getElementById("new-cat").value.trim();
+    const price    = parseFloat(document.getElementById("new-price").value);
+    const inStock  = document.getElementById("new-stock").value === "true";
+
+    if (!name || !category || isNaN(price)) {
+      return showResponse("post-response", "Name, category, and price are all required.", true);
+    }
+
+    try {
+      const res  = await fetch(`${base()}/api/products`, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ name, category, price, inStock }),
+      });
+      const json = await res.json();
+      showResponse("post-response", json, !res.ok);
+
+      if (res.ok) {
+        // Clear form and reload list
+        ["new-name","new-cat","new-price"].forEach(id => document.getElementById(id).value = "");
+        await loadProducts();
+      }
+    } catch (err) {
+      showResponse("post-response", `Network error: ${err.message}`, true);
+    }
+  }
+
+  // ── Init ─────────────────────────────────────────────────────────────────
+  loadProducts();
+</script>
+</body>
+</html>
