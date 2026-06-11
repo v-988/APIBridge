@@ -77,15 +77,17 @@ productshelf/
 ---
 
 ## System Architecture
-
+<p align="center">
 <img width="350" height="350" alt="APIbridge architecture" src="https://github.com/user-attachments/assets/dacd99fa-d1f0-4a5a-a029-9eef44673a3b" />
+</p>
 
 
 ---
 
 ## Result Preview
-
+<p align="center">
 <img width="350" height="350" alt="result preview" src="https://github.com/user-attachments/assets/dacd99fa-d1f0-4a5a-a029-9eef44673a3b" />
+</p>
 
 
 
