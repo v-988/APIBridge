@@ -86,7 +86,8 @@ productshelf/
 
 ## Result Preview
 <p align="center">
-<img width="350" height="350" alt="result preview" src="https://github.com/user-attachments/assets/dacd99fa-d1f0-4a5a-a029-9eef44673a3b" />
+  <img width="350" height="632" alt="result preview" src="https://github.com/user-attachments/assets/ed42633d-cbb8-4dcf-a4a3-7b4206406d7d" />
+
 </p>
 
 
