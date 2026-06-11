@@ -1,4 +1,4 @@
-                                                        APIBridge
+                                                      APIBridge
 
 A full-stack REST API demo. The browser frontend talks to an Express backend over four clean endpoints — GET all, GET one, POST create, DELETE. No frameworks, no build step.
 ![License: MIT](https://img.shields.io/badge/License-MIT-7c6cfc.svg)
@@ -76,12 +76,19 @@ productshelf/
 
 ---
 
-## Architecture
+## System Architecture
 
 <img width="350" height="350" alt="APIbridge architecture" src="https://github.com/user-attachments/assets/dacd99fa-d1f0-4a5a-a029-9eef44673a3b" />
 
 
 ---
+
+## Result Preview
+
+<img width="350" height="350" alt="result preview" src="https://github.com/user-attachments/assets/dacd99fa-d1f0-4a5a-a029-9eef44673a3b" />
+
+
+
 
 ## License
 
