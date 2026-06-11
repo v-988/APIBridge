@@ -78,7 +78,8 @@ productshelf/
 
 ## Architecture
 
-![System Architecture](docs/architecture.svg)
+<img width="1015" height="575" alt="APIbridge architecture" src="https://github.com/user-attachments/assets/dacd99fa-d1f0-4a5a-a029-9eef44673a3b" />
+
 
 ---
 
